@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>独旅十六型人格测试</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui}
+        body{background:#f5f9f7;color:#333;padding:20px;max-width:720px;margin:0 auto}
+        .box{background:#fff;border-radius:18px;padding:30px;box-shadow:0 2px 12px #e2ede8;min-height:90vh}
+        .hide{display:none}
+        h1{color:#386b59;margin-bottom:12px;font-size:24px}
+        .desc{color:#666;margin-bottom:30px;line-height:1.6}
+        .q-title{font-size:17px;margin-bottom:20px;min-height:50px}
+        .opt{padding:14px 16px;border:1px solid #d9e8e2;border-radius:12px;margin-bottom:12px;cursor:pointer;transition:0.2s}
+        .opt:hover{background:#eaf5f1;border-color:#68b89e}
+        .btn{background:#489c82;color:white;border:none;border-radius:12px;padding:13px 26px;margin-top:20px;cursor:pointer;font-size:16px}
+        .result-card{border:1px solid #cce6dd;border-radius:16px;padding:24px;margin-top:20px;background:#f7fffc}
+        .code{font-size:22px;font-weight:bold;color:#397c67;margin-bottom:8px}
+        .name{font-size:20px;margin-bottom:10px}
+        .progress{color:#888;margin-bottom:15px}
+        .res-img{width:260px;height:260px;border-radius:12px;object-fit:cover;margin:10px auto;display:block;border:1px solid #cce6dd}
+        .res-text{line-height:1.8;color:#444;margin-top:15px;text-align:justify}
+    </style>
+</head>
+<body>
+<div class="box">
+    <!--首页-->
+    <div id="page-home">
+        <h1>独旅十六型人格测试</h1>
+        <p class="desc">共30道选择题，根据你的真实旅行习惯选择，答完自动测算四维人格，解锁你的专属独旅类型<br>四大维度：社交(G孤栖/X寻伴)｜规划(M谋定/S随性)｜感知(L落地/Y神游)｜决策(R冷理/W温感)</p>
+        <button class="btn" onclick="startTest()">开始测试</button>
+    </div>
+
+    <!--答题页-->
+    <div id="page-question" class="hide">
+        <div class="progress">第<span id="cur">1</span>/30题</div>
+        <div class="q-title" id="qtext"></div>
+        <div id="opts-box"></div>
+    </div>
+
+    <!--结果页（配图+文案）-->
+    <div id="page-res" class="hide">
+        <h1>你的独旅人格结果</h1>
+        <div class="result-card">
+            <!--人格图片位：本地png替换src即可-->
+            <img class="res-img" id="person-img" src="">
+            <div class="code" id="res-code"></div>
+            <div class="name" id="res-name"></div>
+            <div class="res-text" id="res-desc"></div>
+        </div>
+        <button class="btn" onclick="restart()">重新测试</button>
+    </div>
+</div>
+
+<script>
+//1.题库：选项剔除全部+2标注，score保留计分规则（后台隐形计分）
+const questionList = [
+    //1-8 G/X
+    {q:"1.准备独自旅行，青旅陌生人主动邀约结伴半日，你？",opt:["A直接婉拒","B聊两句再委婉推脱","C聊得来就结伴半天","D主动邀约对方同行"],score:["G:2","G:2","X:2","X:2"]},
+    {q:"2.旅途路上有人问路搭话，你的本能？",opt:["A简单指路快速结束对话","B点头示意不多闲聊","C乐意多说几句本地贴士","D兴致上来顺路一起逛一小段"],score:["G:2","G:2","X:2","X:2"]},
+    {q:"3.独自吃饭时邻座游客搭话唠嗑？",opt:["A低头用餐尽量不接话","B礼貌敷衍尽快收尾","C轻松闲聊美食风土","D相约下次一起探店"],score:["G:2","G:2","X:2","X:2"]},
+    {q:"4.偶遇小众景点同好游客，你会？",opt:["A各自游玩互不打扰","B点头致意即可","C短暂结伴逛完此处","D互换行程结伴多日"],score:["G:2","G:2","X:2","X:2"]},
+    {q:"5.独行途中临时缺帮手搬行李/找路？",opt:["A自己慢慢搞定绝不找人","B硬扛优先不求助","C就近找人短暂求助","D顺势结伴同行一段"],score:["G:2","G:2","X:2","X:2"]},
+    {q:"6.深夜古城闲逛碰到独行旅人？",opt:["A绕路避开","B擦肩而过不交流","C简单寒暄几句","D结伴夜游街巷"],score:["G:2","G:2","X:2","X:2"]},
+    {q:"7.当地人热情邀请做客，你的选择？",opt:["A果断谢绝","B客套婉拒","C酌情短时间做客","D欣然赴约深度体验"],score:["G:2","G:2","X:2","X:2"]},
+    {q:"8.结伴同行不舒服时？",opt:["A悄悄独自离开","B找理由分开不再碰面","C坦诚说明分开行动","D约定后续有空再约"],score:["G:2","G:2","X:2","X:2"]},
+    //9-16 M/S
+    {q:"9.出发前行程安排？",opt:["A车票住宿景点全精确到小时","B做好详细每日清单","C只定目的地，到地再安排","D目的地随缘，临近出发再决定"],score:["M:2","M:2","S:2","S:2"]},
+    {q:"10.原定景点临时闭园？",opt:["A立刻启用备用预案改备选景点","B按预案微调当日路线","C就地闲逛附近街区","D直接更改全天行程漫无目的逛"],score:["M:2","M:2","S:2","S:2"]},
+    {q:"11.每天出门时间？",opt:["A固定早8点准时出门","B划定固定出行时段","C睡醒再决定出门与否","D心血来潮半夜出门闲逛"],score:["M:2","M:2","S:2","S:2"]},
+    {q:"12.美食探店计划？",opt:["A提前查好营业时间排队攻略","B列入行程定点打卡","C路上偶遇顺眼店铺就进","D随机钻进路边不知名小店"],score:["M:2","M:2","S:2","S:2"]},
+    {q:"13.天气突变打乱计划？",opt:["A启动备选行程方案","B小幅调整当日项目","C就近随便闲逛消磨时间","D直接摆烂全天随性游荡"],score:["M:2","M:2","S:2","S:2"]},
+    {q:"14.交通订票方式？",opt:["A提前全部订好往返车票","B分段提前预定交通","C走到车站现场买票","D临时决定去下一座城市再买票"],score:["M:2","M:2","S:2","S:2"]},
+    {q:"15.多余空闲半天？",opt:["A插入清单遗漏景点","B补完原定计划项目","C随便走走发掘小众地","D原地发呆看风景一整天"],score:["M:2","M:2","S:2","S:2"]},
+    {q:"16.看到远处不知名山野？",opt:["A列入下次出行计划","B查询资料合适再打卡","C有空临时绕路前往","D当即抛下所有行程直奔过去"],score:["M:2","M:2","S:2","S:2"]},
+    //17-23 L/Y
+    {q:"17.逛老城重心放在？",opt:["A逛市集、尝小吃、摸本地风物","B打卡地标实地体验","C感受老城氛围脑补过往故事","D静坐发呆联想历史人文"],score:["L:2","L:2","Y:2","Y:2"]},
+    {q:"18.参观博物馆关注点？",opt:["A展品材质、实物细节、馆藏出处","B展品真实历史史实","C展品背后传说与浪漫遐想","D沉浸氛围自由脑洞幻想"],score:["L:2","L:2","Y:2","Y:2"]},
+    {q:"19.自然风光游览？",opt:["A爬山涉水近距离接触实景","B实地打卡观景台","C坐在观景处放空思绪","D望着景色沉浸精神漫游"],score:["L:2","L:2","Y:2","Y:2"]},
+    {q:"20.逛本地菜市场？",opt:["A品尝特色食材、采购特产","B实地了解当地饮食","C静坐旁观人间烟火","D感受市井氛围感遐想生活"],score:["L:2","L:2","Y:2","Y:2"]},
+    {q:"21.路过老旧古建筑？",opt:["A细看建筑构造、砖瓦细节","B查询建筑真实履历","C被传说故事打动驻足","D凭风景脑补古风故事"],score:["L:2","L:2","Y:2","Y:2"]},
+    {q:"22.短途城郊出行？",opt:["A打卡村落实景特产","B走遍当地知名点位","C边走边幻想乡土往事","D随处静坐感受自然意境"],score:["L:2","L:2","Y:2","Y:2"]},
+    {q:"23.雨天被困旅店？",opt:["A整理旅途实物照片、纪念品","B盘点已打卡地点","C看书联想旅途见闻","D望着雨景放空胡思乱想"],score:["L:2","L:2","Y:2","Y:2"]},
+    //24-30 R/W
+    {q:"24.街边溢价文创小店？",opt:["A性价比过低直接路过","B核算价格不合理不消费","C偶尔心动小额入手","D哪怕贵喜欢就直接买下"],score:["R:2","R:2","W:2","W:2"]},
+    {q:"25.网红小众民宿价格偏高？",opt:["A对比性价比选择平价住宿","B综合安全预算择优入住","C被装修氛围感打动酌情入住","D一眼心动直接预定"],score:["R:2","R:2","W:2","W:2"]},
+    {q:"26.路边特色小吃看着好看但评价一般？",opt:["A差评多直接放弃消费","B权衡利弊选择稳妥吃食","C兴致来了少量尝试","D凭喜好必买品尝"],score:["R:2","R:2","W:2","W:2"]},
+    {q:"27.临时出现小众冷门路线？",opt:["A测算时间成本不合适放弃","B评估安全与开销再决定","C心动就抽出部分时间体验","D抛下原有计划奔赴新路"],score:["R:2","R:2","W:2","W:2"]},
+    {q:"28.纪念品选购：好看但实用性极低？",opt:["A无用之物绝不购入","B实用性优先拒绝冲动消费","C喜欢就少量购入","D疯狂囤货全凭好感买单"],score:["R:2","R:2","W:2","W:2"]},
+    {q:"29.突发小众展览票价贵？",opt:["A票价不合理放弃参观","B等待优惠档期再来","C预算富余就前去观看","D再贵也要进场感受氛围"],score:["R:2","R:2","W:2","W:2"]},
+    {q:"30.偶遇氛围感极强的无名小店？",opt:["A考量开销、实用性后离开","B没有刚需直接路过","C短暂停留小额消费","D随心消费在店里消磨半天"],score:["R:2","R:2","W:2","W:2"]}
+]
+
+//人格大全：编码=名称+氛围感文案+本地图片文件名（自行替换png名字）
+const personInfo = {
+    GMLR:{
+        name:"高岭之花",
+        img:"gaolinzhihua.png",
+        desc:"偏爱闭环式精致独行，出行规划细密严谨，行程刻度如同落笔工整的诗卷。精打细算打理旅途开销，习惯性婉拒沿路所有寒暄邀约，不攀缘、不结伴，循着自定的路线缓步穿行城市烟火，清冷自律，孤身独享一整段山河岁月。"
+    },
+    GMLW:{
+        name:"飘雪水晶球",
+        img:"piaoxueshuijingqiu.png",
+        desc:"行囊装着完备的出行攻略，却甘愿为街角猝不及防的温柔破例。独自穿梭老城青石板街巷，素来远离人群结伴，唯独被暖融融的氛围感绊住脚步，慢悠悠捡拾散落在市井里细碎又柔软的人间美好。"
+    },
+    GMYR:{
+        name:"踽踽的孤山",
+        img:"jujudegushan.png",
+        desc:"出发前便深挖一城文脉典故，按着详尽计划表踏遍古迹旧址，以理性筛选沿途景致。整趟旅途是一场孤身的人文研学，避开无谓闲谈，沉心与风物历史对望，像一座静立山野、与世安然的孤峰。"
+    },
+    GMYW:{
+        name:"不卷收的文章",
+        img:"bujuanshoudewenzhang.png",
+        desc:"简媜说：山川是不卷收的文章，日月为你掌灯伴读。你攻略条理周全，目光偏爱浸在古建与旧景之中，常会因一段缥缈传说放缓步履。孤身携一卷闲书漫游四方，心绪随沿途风物起落浮沉，周身带着疏离清冷，灵魂却盛满漫无边际的浪漫诗意。"
+    },
+    GSLR:{
+        name:"荒野大镖客",
+        img:"huangyedaobiaoke.png",
+        desc:"摒弃刻板行程束缚，顺着心意随性游走四方，凭借理智避开旅途消费陷阱。双枪会给出答案。偏爱偏僻村镇与旷野山野，来去孤身无牵绊，落脚全凭际遇，自在漂泊于人烟稀疏的天地之间。"
+    },
+    GSLW:{
+        name:"西瓜溜溜匠",
+        img:"xigualiuliujiang.png",
+        desc:"走哪便是哪，没有预设的路线与终点，兴致来了便钻进街边小店闲逛觅食。一人开启漫无目的流浪旅途，行程随心改动，消费跟着喜好走，活成自在散漫的漫游旅人。所谓脚踏西瓜皮，滑到哪里是哪里！"
+    },
+    GSYR:{
+        name:"云游蝴蝶",
+        img:"yunyouhudie.png",
+        desc:"从不伏案做旅行规划，独自闲逛静坐，最爱倚着山巅江边放空神游。清醒规避各类消费圈套，不靠结伴打发时光，只用漫天遐想填满旅途，如同随风辗转、自在翩跹的蝴蝶。"
+    },
+    GSYW:{
+        name:"晚风流浪",
+        img:"wanfengliulang.png",
+        desc:"旅途不受计划桎梏，被落日余晖、老街烟火牵引脚步。孤身漂泊在街巷山野，撞见心动的风景便驻足整日，顺着晚风漫无目的漂泊，落日余晖，你跳我跳。随心度日，随性而行。"
+    },
+    XMLR:{
+        name:"冒险小队大队长",
+        img:"maoxianxiaoduidaduizhang.png",
+        desc:"临行敲定全套稳妥攻略，精打细算规划开销路线，独自启程却不排斥萍水相逢。遇上三观契合的路人可结伴同行一日，遇上异色更是直接收服。余下时光回归独行，是能统筹旅途、灵活相处的领队型旅人。"
+    },
+    XMLW:{
+        name:"雪糕鉴赏官",
+        img:"xuegaojianshangguan.png",
+        desc:"你想堆个雪人吗？你想吃口雪糕吗？完整规划整趟旅途框架，日常开销精打细算，偶遇投缘的同行游客便相约逛市集、尝在地美食。主线行程恪守原定计划，只在闲暇时分结伴，在烟火里邂逅短暂温暖。"
+    },
+    XMYR:{
+        name:"无畏天马",
+        img:"wuweitianma.png",
+        desc:"提前备好文博场馆游览方案，理性规划参观动线，孤身奔赴人文古迹。在展馆与旧址邂逅同好便结伴研学，游览结束各自奔赴前路，潇洒自在，如风里驰骋的天马。"
+    },
+    XMYW:{
+        name:"高雅人士",
+        img:"gaoyarenshi.png",
+        desc:"高雅人士鉴赏中。行程有序从容，偏爱古城文脉风光，遇见志趣相投的旅人便并肩漫步老街。因风景与故事产生共鸣而结伴半日，尽兴之后回归独处，在热闹与孤独之间寻得恰好的平衡。"
+    },
+    XSLR:{
+        name:"诗仙",
+        img:"shixian.png",
+        desc:"今朝有酒今朝醉，无攻略无束缚，随性启程漫游，凭借理智躲开宰客陷阱。沿路随缘结识同行伙伴，投缘便结伴逛吃，三观不合便挥手别离，来去洒脱，携一身风月自在漫游人间。"
+    },
+    XSLW:{
+        name:"街溜子（bushi）",
+        img:"jieliuzi.png",
+        desc:"出行全无既定方案，随性搭讪路上有缘旅人，撞见美味好物临时组队打卡玩乐。兴致消散便分头奔赴各自旅途，主打一场场不期而遇、来去自由的偶遇式独旅。"
+    },
+    XSYR:{
+        name:"心地善良的阿飘",
+        img:"xindishanliangdeapiao.png",
+        desc:"随心穿梭山野小镇，沉迷自然风光与无边遐想，理智斟酌住宿与出行安全。偶遇灵魂同频的旅人便结伴探秘小众秘境，温柔闲散，恍若游荡在人间的温柔游魂。"
+    },
+    XSYW:{
+        name:"暖暖小甜饼",
+        img:"nuannuanxiaotianbing.png",
+        desc:"彻底放下行程枷锁，被沿途风土人情打动便临时改道。一路边走边结交新朋友，结伴沉浸在地烟火日常，在独行的旅程里捡拾源源不断的温暖与欢喜。"
+    }
+};
+
+//分数容器
+let score={G:0,X:0,M:0,S:0,L:0,Y:0,R:0,W:0}
+let now=0;
+
+//页面切换
+function hideAll(){
+    document.getElementById("page-home").classList.add("hide")
+    document.getElementById("page-question").classList.add("hide")
+    document.getElementById("page-res").classList.add("hide")
+}
+function startTest(){
+    hideAll()
+    document.getElementById("page-question").classList.remove("hide")
+    renderQ()
+}
+//渲染题目
+function renderQ(){
+    const item=questionList[now]
+    document.getElementById("cur").innerText=now+1
+    document.getElementById("qtext").innerText=item.q
+    let html=""
+    item.opt.forEach((o,i)=>{
+        html+=`<div class="opt" onclick="selectOpt(${i})">${o}</div>`
+    })
+    document.getElementById("opts-box").innerHTML=html
+}
+//选择选项加分
+function selectOpt(idx){
+    const sStr=questionList[now].score[idx]
+    let [key,val]=sStr.split(":")
+    score[key]+=Number(val)
+    now++
+    if(now>=questionList.length){
+        calcResult()
+        return
+    }
+    renderQ()
+}
+//计算结果+渲染名称/文案/图片
+function calcResult(){
+    hideAll()
+    document.getElementById("page-res").classList.remove("hide")
+    //四维判定
+    let gx=score.G>score.X?"G":"X"
+    let ms=score.M>score.S?"M":"S"
+    let ly=score.L>score.Y?"L":"Y"
+    let rw=score.R>score.W?"R":"W"
+    let code=gx+ms+ly+rw
+    let info=personInfo[code]
+    //填充页面数据
+    document.getElementById("res-code").innerText=code
+    document.getElementById("res-name").innerText=info.name
+    document.getElementById("res-desc").innerText=info.desc
+    document.getElementById("person-img").src=info.img
+}
+//重置测试
+function restart(){
+    hideAll()
+    document.getElementById("page-home").classList.remove("hide")
+    score={G:0,X:0,M:0,S:0,L:0,Y:0,R:0,W:0}
+    now=0
+}
+</script>
+</body>
+</html>
