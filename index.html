@@ -14,7 +14,10 @@
         .q-title{font-size:17px;margin-bottom:20px;min-height:50px}
         .opt{padding:14px 16px;border:1px solid #d9e8e2;border-radius:12px;margin-bottom:12px;cursor:pointer;transition:0.2s}
         .opt:hover{background:#eaf5f1;border-color:#68b89e}
+        .opt.selected{background:#cce6dd;border-color:#489c82}
         .btn{background:#489c82;color:white;border:none;border-radius:12px;padding:13px 26px;margin-top:20px;cursor:pointer;font-size:16px}
+        .btn-group{display:flex;gap:16px;margin-top:24px;justify-content:center;}
+        .btn-pre{background:#b8d9cf;color:#333}
         .result-card{border:1px solid #cce6dd;border-radius:16px;padding:24px;margin-top:20px;background:#f7fffc}
         .code{font-size:22px;font-weight:bold;color:#397c67;margin-bottom:8px}
         .name{font-size:20px;margin-bottom:10px}
@@ -32,18 +35,22 @@
         <button class="btn" onclick="startTest()">开始测试</button>
     </div>
 
-    <!--答题页-->
+    <!--答题页（新增上下题按钮区域）-->
     <div id="page-question" class="hide">
         <div class="progress">第<span id="cur">1</span>/30题</div>
         <div class="q-title" id="qtext"></div>
         <div id="opts-box"></div>
+        <div class="btn-group">
+            <button class="btn btn-pre" id="prevBtn">上一题</button>
+            <button class="btn" id="nextBtn">下一题</button>
+        </div>
     </div>
 
     <!--结果页（配图+文案）-->
     <div id="page-res" class="hide">
         <h1>你的独旅人格结果</h1>
         <div class="result-card">
-            <!--人格图片位：本地png替换src即可-->
+            <!--人格图片位：本地png和html同目录-->
             <img class="res-img" id="person-img" src="">
             <div class="code" id="res-code"></div>
             <div class="name" id="res-name"></div>
@@ -92,11 +99,11 @@ const questionList = [
     {q:"30.偶遇氛围感极强的无名小店？",opt:["A考量开销、实用性后离开","B没有刚需直接路过","C短暂停留小额消费","D随心消费在店里消磨半天"],score:["R:2","R:2","W:2","W:2"]}
 ]
 
-//人格大全：编码=名称+氛围感文案+本地图片文件名（自行替换png名字）
+//人格大全：编码=名称+氛围感文案+本地图片文件名（沿用你原图文件名）
 const personInfo = {
     GMLR:{
         name:"高岭之花",
-        img:"gaolinzhihua.png",
+        img:"gaolingzhihua.png",
         desc:"偏爱闭环式精致独行，出行规划细密严谨，行程刻度如同落笔工整的诗卷。精打细算打理旅途开销，习惯性婉拒沿路所有寒暄邀约，不攀缘、不结伴，循着自定的路线缓步穿行城市烟火，清冷自律，孤身独享一整段山河岁月。"
     },
     GMLW:{
@@ -104,7 +111,7 @@ const personInfo = {
         img:"piaoxueshuijingqiu.png",
         desc:"行囊装着完备的出行攻略，却甘愿为街角猝不及防的温柔破例。独自穿梭老城青石板街巷，素来远离人群结伴，唯独被暖融融的氛围感绊住脚步，慢悠悠捡拾散落在市井里细碎又柔软的人间美好。"
     },
-    GMYR:{
+    GMYR:{                            
         name:"踽踽的孤山",
         img:"jujudegushan.png",
         desc:"出发前便深挖一城文脉典故，按着详尽计划表踏遍古迹旧址，以理性筛选沿途景致。整趟旅途是一场孤身的人文研学，避开无谓闲谈，沉心与风物历史对望，像一座静立山野、与世安然的孤峰。"
@@ -176,9 +183,11 @@ const personInfo = {
     }
 };
 
-//分数容器
+
+//分数容器、答题记录（新增答案存储，返回自动回填选项）
 let score={G:0,X:0,M:0,S:0,L:0,Y:0,R:0,W:0}
 let now=0;
+let answerRecord = {}; //记录每一题选择下标
 
 //页面切换
 function hideAll(){
@@ -191,31 +200,60 @@ function startTest(){
     document.getElementById("page-question").classList.remove("hide")
     renderQ()
 }
-//渲染题目
+//渲染题目（已选答案自动标蓝选中）
 function renderQ(){
     const item=questionList[now]
     document.getElementById("cur").innerText=now+1
     document.getElementById("qtext").innerText=item.q
     let html=""
     item.opt.forEach((o,i)=>{
-        html+=`<div class="opt" onclick="selectOpt(${i})">${o}</div>`
+        let selectClass = "";
+        if(answerRecord[now] === i) selectClass = "selected";
+        html+=`<div class="opt ${selectClass}" onclick="selectOpt(${i})">${o}</div>`
     })
     document.getElementById("opts-box").innerHTML=html
+    //首题隐藏上一题按钮
+    document.getElementById("prevBtn").style.display = now === 0 ? "none" : "block";
 }
-//选择选项加分
+
+//选择选项保存答案
 function selectOpt(idx){
-    const sStr=questionList[now].score[idx]
-    let [key,val]=sStr.split(":")
-    score[key]+=Number(val)
-    now++
-    if(now>=questionList.length){
-        calcResult()
-        return
-    }
-    renderQ()
+    answerRecord[now] = idx;
 }
-//计算结果+渲染名称/文案/图片
+
+//上一题按钮
+document.getElementById("prevBtn").onclick = function(){
+    if(now > 0){
+        now--;
+        renderQ();
+    }
+}
+//下一题按钮
+document.getElementById("nextBtn").onclick = function(){
+    //没选答案提示
+    if(answerRecord[now] == undefined){
+        alert("请先选择一个选项哦~");
+        return;
+    }
+    //最后一题直接算分出结果
+    if(now >= questionList.length - 1){
+        calcResult();
+        return;
+    }
+    now++;
+    renderQ();
+}
+
+//计算结果
 function calcResult(){
+    //重新统计总分
+    score={G:0,X:0,M:0,S:0,L:0,Y:0,R:0,W:0};
+    for(let index in answerRecord){
+        let optIdx = answerRecord[index];
+        let sStr=questionList[index].score[optIdx]
+        let [key,val]=sStr.split(":")
+        score[key]+=Number(val)
+    }
     hideAll()
     document.getElementById("page-res").classList.remove("hide")
     //四维判定
@@ -231,12 +269,14 @@ function calcResult(){
     document.getElementById("res-desc").innerText=info.desc
     document.getElementById("person-img").src=info.img
 }
+
 //重置测试
 function restart(){
     hideAll()
     document.getElementById("page-home").classList.remove("hide")
     score={G:0,X:0,M:0,S:0,L:0,Y:0,R:0,W:0}
     now=0
+    answerRecord = {};
 }
 </script>
 </body>
