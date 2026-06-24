@@ -3,399 +3,414 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>独旅 · 十六型人格测试</title>
+    <title>独旅十六型人格测试</title>
     <style>
-        /* 全局样式重置 */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: "Microsoft YaHei", 思源黑体, sans-serif;
+        *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui}
+        body{background:#f5f9f7;color:#333;padding:20px;max-width:720px;margin:0 auto}
+        .box{background:#fff;border-radius:18px;padding:30px;box-shadow:0 2px 12px #e2ede8;min-height:90vh}
+        .hide{display:none}
+        h1{color:#386b59;margin-bottom:12px;font-size:24px}
+        .desc{color:#666;margin-bottom:30px;line-height:1.6}
+        .q-title{font-size:17px;margin-bottom:20px;min-height:50px}
+        .opt{padding:14px 16px;border:1px solid #d9e8e2;border-radius:12px;margin-bottom:12px;cursor:pointer;transition:0.2s}
+        .opt:hover{background:#eaf5f1;border-color:#68b89e}
+        .opt.selected{background:#cce6dd;border-color:#489c82}
+        .btn{background:#489c82;color:white;border:none;border-radius:12px;padding:13px 26px;margin-top:20px;cursor:pointer;font-size:16px}
+        .btn-group{display:flex;gap:16px;margin-top:24px;justify-content:center;}
+        .btn-pre{background:#b8d9cf;color:#333}
+        .result-card{border:1px solid #cce6dd;border-radius:16px;padding:24px;margin-top:20px;background:#f7fffc}
+        .code{font-size:22px;font-weight:bold;color:#397c67;margin-bottom:8px}
+        .name{font-size:20px;margin-bottom:10px}
+        .progress{color:#888;margin-bottom:15px}
+        .res-img{width:260px;height:260px;border-radius:12px;object-fit:cover;margin:10px auto;display:block;border:1px solid #cce6dd}
+        .res-text{line-height:1.8;color:#444;margin-top:15px;text-align:justify}
+
+        /* ========== 新增：首页居中美化样式 ========== */
+        #page-home{
+            text-align:center;
+            padding:40px 10px;
+        }
+        #page-home h1{
+            font-size:28px;
+            letter-spacing:3px;
+            margin-bottom:24px;
+        }
+        #page-home .desc{
+            font-size:16px;
+            max-width:600px;
+            margin:0 auto 40px;
+        }
+        #page-home .btn{
+            margin:0 auto;
+            font-size:18px;
+            padding:14px 40px;
         }
 
-        body {
-            background-color: #f8f5f2;
-            color: #333;
-            line-height: 1.6;
+        /* ========== 新增：十六人格图鉴弹窗样式 ========== */
+        .album-modal{
+            display:none;
+            position:fixed;
+            inset:0;
+            background:rgba(0,0,0,0.65);
+            z-index:999;
+            padding:20px;
+            overflow-y:auto;
         }
-
-        /* 开始页面容器（保留居中+新增emoji适配） */
-        .start-page {
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 0 20px;
-            text-align: center;
+        .album-wrap{
+            background:#fff;
+            max-width:800px;
+            margin:30px auto;
+            border-radius:20px;
+            padding:25px;
         }
-
-        /* 标题样式 - 融入emoji装饰 */
-        .start-title {
-            font-size: 42px;
-            font-weight: 700;
-            color: #2d4059;
-            letter-spacing: 12px;
-            margin-bottom: 20px;
-            line-height: 1.8;
-            position: relative;
+        .album-top{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:20px;
+            border-bottom:1px solid #e2ede8;
+            padding-bottom:12px;
         }
-        /* 标题前后emoji装饰（可选，也可直接写在文字里） */
-        .start-title::before {
-            content: "🌿";
-            margin-right: 15px;
-            font-size: 38px;
+        .album-title{
+            font-size:22px;
+            color:#386b59;
         }
-        .start-title::after {
-            content: "🌿";
-            margin-left: 15px;
-            font-size: 38px;
+        .close-album{
+            width:36px;
+            height:36px;
+            border-radius:50%;
+            border:none;
+            background:#489c82;
+            color:#fff;
+            font-size:18px;
+            cursor:pointer;
         }
-
-        /* 副标题/描述文本 - 穿插emoji */
-        .start-desc {
-            font-size: 18px;
-            color: #5a6b7d;
-            letter-spacing: 2px;
-            line-height: 2;
-            max-width: 600px;
-            margin-bottom: 60px;
+        .person-grid{
+            display:grid;
+            grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+            gap:18px;
         }
-        .start-desc span {
-            color: #ea5455;
-            font-weight: 500;
+        .person-card{
+            background:#f7fffc;
+            border:1px solid #cce6dd;
+            border-radius:14px;
+            padding:16px;
         }
-
-        /* 开始按钮 */
-        .start-btn {
-            padding: 16px 48px;
-            font-size: 20px;
-            background-color: #ea5455;
-            color: white;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            letter-spacing: 4px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(234, 84, 85, 0.3);
+        .person-card h4{
+            color:#386b59;
+            margin-bottom:6px;
         }
-        .start-btn:hover {
-            background-color: #d64849;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(234, 84, 85, 0.4);
+        .person-card .short-desc{
+            font-size:13px;
+            color:#555;
+            line-height:1.5;
         }
-
-        /* 测试页面（简化占位） */
-        .test-page {
-            display: none;
-            width: 100vw;
-            height: 100vh;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            text-align: center;
-        }
-        .test-page p {
-            font-size: 20px;
-            color: #2d4059;
-            margin-bottom: 30px;
-        }
-        .next-btn {
-            padding: 12px 36px;
-            font-size: 18px;
-            background-color: #2d4059;
-            color: white;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            letter-spacing: 2px;
-            transition: all 0.3s ease;
-        }
-        .next-btn:hover {
-            background-color: #1f2d3d;
-            transform: translateY(-2px);
-        }
-
-        /* 结果页面 */
-        .result-page {
-            display: none;
-            width: 100vw;
-            min-height: 100vh;
-            padding: 40px 20px;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-        }
-        .result-title {
-            font-size: 32px;
-            color: #2d4059;
-            letter-spacing: 6px;
-            margin-bottom: 20px;
-        }
-        .result-desc {
-            font-size: 20px;
-            color: #5a6b7d;
-            margin-bottom: 40px;
-            max-width: 700px;
-        }
-        .result-desc em {
-            color: #ea5455;
-            font-style: normal;
-            font-weight: 600;
-        }
-        .open-album-btn {
-            padding: 14px 40px;
-            font-size: 18px;
-            background-color: #4e937a;
-            color: white;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            letter-spacing: 3px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(78, 147, 122, 0.3);
-            margin-bottom: 20px;
-        }
-        .open-album-btn:hover {
-            background-color: #3d7a63;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(78, 147, 122, 0.4);
-        }
-
-        /* 图鉴弹窗遮罩 */
-        .album-modal {
-            display: none; /* 默认隐藏 */
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: rgba(0, 0, 0, 0.7);
-            z-index: 999;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            overflow-y: auto;
-        }
-        /* 图鉴内容容器 */
-        .album-content {
-            background-color: #fff;
-            border-radius: 20px;
-            padding: 30px;
-            max-width: 1200px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        /* 关闭按钮 */
-        .close-btn {
-            position: sticky;
-            top: 10px;
-            left: calc(100% - 40px);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: #ea5455;
-            color: white;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-            margin-bottom: 20px;
-            transition: all 0.2s ease;
-        }
-        .close-btn:hover {
-            background-color: #d64849;
-        }
-        /* 图鉴标题 */
-        .album-title {
-            font-size: 28px;
-            color: #2d4059;
-            letter-spacing: 4px;
-            text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #f8f5f2;
-        }
-        /* 图鉴网格布局 */
-        .personality-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-        }
-        /* 单个人格卡片 */
-        .personality-card {
-            background-color: #f8f5f2;
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-        .personality-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-        }
-        /* 人格图片占位（可替换为真实图片链接） */
-        .personality-img {
-            width: 100%;
-            height: 180px;
-            border-radius: 10px;
-            background-color: #e8e2db;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: #5a6b7d;
-            font-size: 14px;
-        }
-        .personality-name {
-            font-size: 20px;
-            color: #2d4059;
-            font-weight: 600;
-            margin-bottom: 10px;
-            letter-spacing: 2px;
-        }
-        .personality-desc {
-            font-size: 14px;
-            color: #5a6b7d;
-            line-height: 1.6;
-            text-align: left;
+        .open-album-btn{
+            background:#386b59;
+            margin-left:10px;
         }
     </style>
 </head>
 <body>
-    <!-- 1. 开始页面（加emoji装饰） -->
-    <div class="start-page" id="startPage">
-        <h1 class="start-title">独 旅</h1>
-        <p class="start-desc">
-            🌸 一个人的旅途，藏着最真实的自己 🌸<br>
-            🌼 走过山川湖海，遇见内心的答案 🌼<br>
-            <span>完成这份测试，解锁你的独旅人格画像 ✨</span>
+<div class="box">
+    <!--首页（已增加鲜花绿叶emoji+居中美化，原有逻辑不变）-->
+    <div id="page-home">
+        <h1>🌿 独旅十六型人格测试 🌸</h1>
+        <p class="desc">
+            🌼 共30道选择题，根据你的真实旅行习惯选择，答完自动测算四维人格，解锁你的专属独旅类型 ✨<br>
+            四大维度：社交(G孤栖/X寻伴)｜规划(M谋定/S随性)｜感知(L落地/Y神游)｜决策(R冷理/W温感)🍃
         </p>
-        <button class="start-btn" id="startBtn">开始测试</button>
+        <button class="btn" onclick="startTest()">开始测试</button>
     </div>
 
-    <!-- 2. 测试页面（简化占位，可扩展真实题目） -->
-    <div class="test-page" id="testPage">
-        <p>【测试题示例】当你独自旅行时，更倾向于？<br>
-           A. 提前规划好所有行程 🗺️ &nbsp;&nbsp; B. 随遇而安，走到哪算哪 🌱
-        </p>
-        <button class="next-btn" id="nextBtn">提交答案 → 查看结果</button>
-    </div>
-
-    <!-- 3. 结果页面 -->
-    <div class="result-page" id="resultPage">
-        <h2 class="result-title">你的独旅人格：INFP · 理想主义的漫游者 🌿</h2>
-        <p class="result-desc">
-            你偏爱小众的旅行目的地，享受与自然独处的时光 ✨<br>
-            旅途中的一束花、一阵风，都能成为你珍藏的美好<br>
-            你不追求“打卡式”旅行，只在意内心的松弛与共鸣 💛
-        </p>
-        <button class="open-album-btn" id="openAlbumBtn">打开「十六型人格全图鉴」📖</button>
-        <p style="color: #999; font-size: 14px;">点击查看所有独旅人格的故事</p>
-    </div>
-
-    <!-- 4. 十六型人格全图鉴弹窗 -->
-    <div class="album-modal" id="albumModal">
-        <div class="album-content">
-            <button class="close-btn" id="closeBtn">×</button>
-            <h3 class="album-title">独旅 · 十六型人格全图鉴 🌷</h3>
-            <div class="personality-grid">
-                <!-- 示例1：INFP 理想主义的漫游者 -->
-                <div class="personality-card">
-                    <div class="personality-img">
-                        （替换为INFP人格图片链接）<br>INFP · 视觉图
-                    </div>
-                    <h4 class="personality-name">INFP · 理想主义的漫游者</h4>
-                    <p class="personality-desc">
-                        独旅关键词：小众、自然、精神共鸣<br>
-                        旅行风格：偏爱山野、古镇等安静之地，会为了一片晚霞停留一下午，旅行手账写满细腻的感受。
-                    </p>
-                </div>
-                <!-- 示例2：ENTJ 掌控型探索者 -->
-                <div class="personality-card">
-                    <div class="personality-img">
-                        （替换为ENTJ人格图片链接）<br>ENTJ · 视觉图
-                    </div>
-                    <h4 class="personality-name">ENTJ · 掌控型探索者</h4>
-                    <p class="personality-desc">
-                        独旅关键词：高效、挑战、目标感<br>
-                        旅行风格：提前做详细攻略，主打“特种兵式旅行”，喜欢征服高难度路线（如徒步雪山），享受掌控全程的成就感。
-                    </p>
-                </div>
-                <!-- 示例3：ESFP 鲜活的体验家 -->
-                <div class="personality-card">
-                    <div class="personality-img">
-                        （替换为ESFP人格图片链接）<br>ESFP · 视觉图
-                    </div>
-                    <h4 class="personality-name">ESFP · 鲜活的体验家</h4>
-                    <p class="personality-desc">
-                        独旅关键词：热闹、烟火、新鲜感<br>
-                        旅行风格：爱逛当地夜市、体验街头美食，主动和陌生人聊天，旅行的快乐来自“沉浸式融入当地生活”。
-                    </p>
-                </div>
-                <!-- 示例4：INTJ 策略型独行客 -->
-                <div class="personality-card">
-                    <div class="personality-img">
-                        （替换为INTJ人格图片链接）<br>INTJ · 视觉图
-                    </div>
-                    <h4 class="personality-name">INTJ · 策略型独行客</h4>
-                    <p class="personality-desc">
-                        独旅关键词：深度、小众、逻辑感<br>
-                        旅行风格：偏爱有历史/文化底蕴的目的地，会提前研究当地人文，拒绝走马观花，专注挖掘“别人看不到的细节”。
-                    </p>
-                </div>
-                <!-- 可继续添加其他12种人格卡片 -->
-            </div>
+    <!--答题页（完全保留原代码无修改）-->
+    <div id="page-question" class="hide">
+        <div class="progress">第<span id="cur">1</span>/30题</div>
+        <div class="q-title" id="qtext"></div>
+        <div id="opts-box"></div>
+        <div class="btn-group">
+            <button class="btn btn-pre" id="prevBtn">上一题</button>
+            <button class="btn" id="nextBtn">下一题</button>
         </div>
     </div>
 
-    <script>
-        // 元素获取
-        const startPage = document.getElementById('startPage');
-        const testPage = document.getElementById('testPage');
-        const resultPage = document.getElementById('resultPage');
-        const albumModal = document.getElementById('albumModal');
-        const startBtn = document.getElementById('startBtn');
-        const nextBtn = document.getElementById('nextBtn');
-        const openAlbumBtn = document.getElementById('openAlbumBtn');
-        const closeBtn = document.getElementById('closeBtn');
+    <!--结果页：新增打开图鉴按钮，原有内容全部保留-->
+    <div id="page-res" class="hide">
+        <h1>你的独旅人格结果</h1>
+        <div class="result-card">
+            <img class="res-img" id="person-img" src="">
+            <div class="code" id="res-code"></div>
+            <div class="name" id="res-name"></div>
+            <div class="res-text" id="res-desc"></div>
+        </div>
+        <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;">
+            <button class="btn" onclick="restart()">重新测试</button>
+            <!-- 新增图鉴按钮 -->
+            <button class="btn open-album-btn" onclick="openAlbum()">十六型人格全图鉴</button>
+        </div>
+    </div>
+</div>
 
-        // 1. 开始测试 → 进入测试页
-        startBtn.addEventListener('click', () => {
-            startPage.style.display = 'none';
-            testPage.style.display = 'flex';
-        });
+<!-- 新增：十六人格图鉴弹窗（独立DOM，不影响原有页面） -->
+<div class="album-modal" id="albumModal">
+    <div class="album-wrap">
+        <div class="album-top">
+            <div class="album-title">🌷 独旅十六型人格全图鉴</div>
+            <button class="close-album" onclick="closeAlbum()">×</button>
+        </div>
+        <div class="person-grid">
+            <div class="person-card"><h4>GMLR｜高岭之花</h4><p class="short-desc">清冷自律，细密规划，拒绝结伴，独享独行山河</p></div>
+            <div class="person-card"><h4>GMLW｜飘雪水晶球</h4><p class="short-desc">攻略完备，偏爱温柔氛围感，独自漫游市井烟火</p></div>
+            <div class="person-card"><h4>GMYR｜踽踽的孤山</h4><p class="short-desc">深挖人文古迹，理性出行，孤身与历史风物对望</p></div>
+            <div class="person-card"><h4>GMYW｜不卷收的文章</h4><p class="short-desc">严谨规划，沉溺古风浪漫，孤身漫游充满诗意</p></div>
+            <div class="person-card"><h4>GSLR｜荒野大镖客</h4><p class="short-desc">无固定行程，理智避坑，孤身漂泊旷野村镇</p></div>
+            <div class="person-card"><h4>GSLW｜西瓜溜溜匠</h4><p class="short-desc">随心所欲流浪，走到哪玩到哪，散漫自在漫游者</p></div>
+            <div class="person-card"><h4>GSYR｜云游蝴蝶</h4><p class="short-desc">不做规划，放空神游，独自看遍山川风光</p></div>
+            <div class="person-card"><h4>GSYW｜晚风流浪</h4><p class="short-desc">不受计划束缚，随落日晚风漫无目的地漂泊</p></div>
+            <div class="person-card"><h4>XMLR｜冒险小队大队长</h4><p class="short-desc">规划周全，可短期结伴，能统筹旅途的灵活旅人</p></div>
+            <div class="person-card"><h4>XMLW｜雪糕鉴赏官</h4><p class="short-desc">行程完整，偶遇同好结伴逛吃，温柔体验市井</p></div>
+            <div class="person-card"><h4>XMYR｜无畏天马</h4><p class="short-desc">人文研学出行，遇同好结伴游览，潇洒自由</p></div>
+            <div class="person-card"><h4>XMYW｜高雅人士</h4><p class="short-desc">偏爱古城文脉，和知己结伴漫步，平衡独处与热闹</p></div>
+            <div class="person-card"><h4>XSLR｜诗仙</h4><p class="short-desc">无攻略随性漫游，随缘结伴，不合则洒脱分开</p></div>
+            <div class="person-card"><h4>XSLW｜街溜子</h4><p class="short-desc">随性搭讪路人，临时组队打卡，主打偶遇式旅行</p></div>
+            <div class="person-card"><h4>XSYR｜心地善良的阿飘</h4><p class="short-desc">闲散漫游，爱遐想，和同频伙伴探秘小众秘境</p></div>
+            <div class="person-card"><h4>XSYW｜暖暖小甜饼</h4><p class="short-desc">随心改道，一路交友结伴，收集旅途温暖与欢喜</p></div>
+        </div>
+    </div>
+</div>
 
-        // 2. 提交答案 → 进入结果页
-        nextBtn.addEventListener('click', () => {
-            testPage.style.display = 'none';
-            resultPage.style.display = 'flex';
-        });
+<script>
+//1.题库：选项剔除全部+2标注，score保留计分规则（后台隐形计分）
+const questionList = [
+    //1-8 G/X
+    {q:"1.准备独自旅行，青旅陌生人主动邀约结伴半日，你？",opt:["A直接婉拒","B聊两句再委婉推脱","C聊得来就结伴半天","D主动邀约对方同行"],score:["G:2","G:2","X:2","X:2"]},
+    {q:"2.旅途路上有人问路搭话，你的本能？",opt:["A简单指路快速结束对话","B点头示意不多闲聊","C乐意多说几句本地贴士","D兴致上来顺路一起逛一小段"],score:["G:2","G:2","X:2","X:2"]},
+    {q:"3.独自吃饭时邻座游客搭话唠嗑？",opt:["A低头用餐尽量不接话","B礼貌敷衍尽快收尾","C轻松闲聊美食风土","D相约下次一起探店"],score:["G:2","G:2","X:2","X:2"]},
+    {q:"4.偶遇小众景点同好游客，你会？",opt:["A各自游玩互不打扰","B点头致意即可","C短暂结伴逛完此处","D互换行程结伴多日"],score:["G:2","G:2","X:2","X:2"]},
+    {q:"5.独行途中临时缺帮手搬行李/找路？",opt:["A自己慢慢搞定绝不找人","B硬扛优先不求助","C就近找人短暂求助","D顺势结伴同行一段"],score:["G:2","G:2","X:2","X:2"]},
+    {q:"6.深夜古城闲逛碰到独行旅人？",opt:["A绕路避开","B擦肩而过不交流","C简单寒暄几句","D结伴夜游街巷"],score:["G:2","G:2","X:2","X:2"]},
+    {q:"7.当地人热情邀请做客，你的选择？",opt:["A果断谢绝","B客套婉拒","C酌情短时间做客","D欣然赴约深度体验"],score:["G:2","G:2","X:2","X:2"]},
+    {q:"8.结伴同行不舒服时？",opt:["A悄悄独自离开","B找理由分开不再碰面","C坦诚说明分开行动","D约定后续有空再约"],score:["G:2","G:2","X:2","X:2"]},
+    //9-16 M/S
+    {q:"9.出发前行程安排？",opt:["A车票住宿景点全精确到小时","B做好详细每日清单","C只定目的地，到地再安排","D目的地随缘，临近出发再决定"],score:["M:2","M:2","S:2","S:2"]},
+    {q:"10.原定景点临时闭园？",opt:["A立刻启用备用预案改备选景点","B按预案微调当日路线","C就地闲逛附近街区","D直接更改全天行程漫无目的逛"],score:["M:2","M:2","S:2","S:2"]},
+    {q:"11.每天出门时间？",opt:["A固定早8点准时出门","B划定固定出行时段","C睡醒再决定出门与否","D心血来潮半夜出门闲逛"],score:["M:2","M:2","S:2","S:2"]},
+    {q:"12.美食探店计划？",opt:["A提前查好营业时间排队攻略","B列入行程定点打卡","C路上偶遇顺眼店铺就进","D随机钻进路边不知名小店"],score:["M:2","M:2","S:2","S:2"]},
+    {q:"13.天气突变打乱计划？",opt:["A启动备选行程方案","B小幅调整当日项目","C就近随便闲逛消磨时间","D直接摆烂全天随性游荡"],score:["M:2","M:2","S:2","S:2"]},
+    {q:"14.交通订票方式？",opt:["A提前全部订好往返车票","B分段提前预定交通","C走到车站现场买票","D临时决定去下一座城市再买票"],score:["M:2","M:2","S:2","S:2"]},
+    {q:"15.多余空闲半天？",opt:["A插入清单遗漏景点","B补完原定计划项目","C随便走走发掘小众地","D原地发呆看风景一整天"],score:["M:2","M:2","S:2","S:2"]},
+    {q:"16.看到远处不知名山野？",opt:["A列入下次出行计划","B查询资料合适再打卡","C有空临时绕路前往","D当即抛下所有行程直奔过去"],score:["M:2","M:2","S:2","S:2"]},
+    //17-23 L/Y
+    {q:"17.逛老城重心放在？",opt:["A逛市集、尝小吃、摸本地风物","B打卡地标实地体验","C感受老城氛围脑补过往故事","D静坐发呆联想历史人文"],score:["L:2","L:2","Y:2","Y:2"]},
+    {q:"18.参观博物馆关注点？",opt:["A展品材质、实物细节、馆藏出处","B展品真实历史史实","C展品背后传说与浪漫遐想","D沉浸氛围自由脑洞幻想"],score:["L:2","L:2","Y:2","Y:2"]},
+    {q:"19.自然风光游览？",opt:["A爬山涉水近距离接触实景","B实地打卡观景台","C坐在观景处放空思绪","D望着景色沉浸精神漫游"],score:["L:2","L:2","Y:2","Y:2"]},
+    {q:"20.逛本地菜市场？",opt:["A品尝特色食材、采购特产","B实地了解当地饮食","C静坐旁观人间烟火","D感受市井氛围感遐想生活"],score:["L:2","L:2","Y:2","Y:2"]},
+    {q:"21.路过老旧古建筑？",opt:["A细看建筑构造、砖瓦细节","B查询建筑真实履历","C被传说故事打动驻足","D凭风景脑补古风故事"],score:["L:2","L:2","Y:2","Y:2"]},
+    {q:"22.短途城郊出行？",opt:["A打卡村落实景特产","B走遍当地知名点位","C边走边幻想乡土往事","D随处静坐感受自然意境"],score:["L:2","L:2","Y:2","Y:2"]},
+    {q:"23.雨天被困旅店？",opt:["A整理旅途实物照片、纪念品","B盘点已打卡地点","C看书联想旅途见闻","D望着雨景放空胡思乱想"],score:["L:2","L:2","Y:2","Y:2"]},
+    //24-30 R/W
+    {q:"24.街边溢价文创小店？",opt:["A性价比过低直接路过","B核算价格不合理不消费","C偶尔心动小额入手","D哪怕贵喜欢就直接买下"],score:["R:2","R:2","W:2","W:2"]},
+    {q:"25.网红小众民宿价格偏高？",opt:["A对比性价比选择平价住宿","B综合安全预算择优入住","C被装修氛围感打动酌情入住","D一眼心动直接预定"],score:["R:2","R:2","W:2","W:2"]},
+    {q:"26.路边特色小吃看着好看但评价一般？",opt:["A差评多直接放弃消费","B权衡利弊选择稳妥吃食","C兴致来了少量尝试","D凭喜好必买品尝"],score:["R:2","R:2","W:2","W:2"]},
+    {q:"27.临时出现小众冷门路线？",opt:["A测算时间成本不合适放弃","B评估安全与开销再决定","C心动就抽出部分时间体验","D抛下原有计划奔赴新路"],score:["R:2","R:2","W:2","W:2"]},
+    {q:"28.纪念品选购：好看但实用性极低？",opt:["A无用之物绝不购入","B实用性优先拒绝冲动消费","C喜欢就少量购入","D疯狂囤货全凭好感买单"],score:["R:2","R:2","W:2","W:2"]},
+    {q:"29.突发小众展览票价贵？",opt:["A票价不合理放弃参观","B等待优惠档期再来","C预算富余就前去观看","D再贵也要进场感受氛围"],score:["R:2","R:2","W:2","W:2"]},
+    {q:"30.偶遇氛围感极强的无名小店？",opt:["A考量开销、实用性后离开","B没有刚需直接路过","C短暂停留小额消费","D随心消费在店里消磨半天"],score:["R:2","R:2","W:2","W:2"]}
+]
 
-        // 3. 打开全图鉴弹窗
-        openAlbumBtn.addEventListener('click', () => {
-            albumModal.style.display = 'flex';
-            // 禁止页面滚动
-            document.body.style.overflow = 'hidden';
-        });
+//人格大全：编码=名称+氛围感文案+本地图片文件名（沿用你原图文件名）
+const personInfo = {
+    GMLR:{
+        name:"高岭之花",
+        img:"gaolingzhihua.png",
+        desc:"偏爱闭环式精致独行，出行规划细密严谨，行程刻度如同落笔工整的诗卷。精打细算打理旅途开销，习惯性婉拒沿路所有寒暄邀约，不攀缘、不结伴，循着自定的路线缓步穿行城市烟火，清冷自律，孤身独享一整段山河岁月。"
+    },
+    GMLW:{
+        name:"飘雪水晶球",
+        img:"piaoxueshuijingqiu.png",
+        desc:"行囊装着完备的出行攻略，却甘愿为街角猝不及防的温柔破例。独自穿梭老城青石板街巷，素来远离人群结伴，唯独被暖融融的氛围感绊住脚步，慢悠悠捡拾散落在市井里细碎又柔软的人间美好。"
+    },
+    GMYR:{                            
+        name:"踽踽的孤山",
+        img:"jujudegushan.png",
+        desc:"出发前便深挖一城文脉典故，按着详尽计划表踏遍古迹旧址，以理性筛选沿途景致。整趟旅途是一场孤身的人文研学，避开无谓闲谈，沉心与风物历史对望，像一座静立山野、与世安然的孤峰。"
+    },
+    GMYW:{
+        name:"不卷收的文章",
+        img:"bujuanshoudewenzhang.png",
+        desc:"简媜说：山川是不卷收的文章，日月为你掌灯伴读。你攻略条理周全，目光偏爱浸在古建与旧景之中，常会因一段缥缈传说放缓步履。孤身携一卷闲书漫游四方，心绪随沿途风物起落浮沉，周身带着疏离清冷，灵魂却盛满漫无边际的浪漫诗意。"
+    },
+    GSLR:{
+        name:"荒野大镖客",
+        img:"huangyedabiaoke.png",
+        desc:"摒弃刻板行程束缚，顺着心意随性游走四方，凭借理智避开旅途消费陷阱。双枪会给出答案。偏爱偏僻村镇与旷野山野，来去孤身无牵绊，落脚全凭际遇，自在漂泊于人烟稀疏的天地之间。"
+    },
+    GSLW:{
+        name:"西瓜溜溜匠",
+        img:"xigualiuliujiang.png",
+        desc:"走哪便是哪，没有预设的路线与终点，兴致来了便钻进街边小店闲逛觅食。一人开启漫无目的流浪旅途，行程随心改动，消费跟着喜好走，活成自在散漫的漫游旅人。所谓脚踏西瓜皮，滑到哪里是哪里！"
+    },
+    GSYR:{
+        name:"云游蝴蝶",
+        img:"yunyouhudie.png",
+        desc:"从不伏案做旅行规划，独自闲逛静坐，最爱倚着山巅江边放空神游。清醒规避各类消费圈套，不靠结伴打发时光，只用漫天遐想填满旅途，如同随风辗转、自在翩跹的蝴蝶。"
+    },
+    GSYW:{
+        name:"晚风流浪",
+        img:"wanfengliulang.png",
+        desc:"旅途不受计划桎梏，被落日余晖、老街烟火牵引脚步。孤身漂泊在街巷山野，撞见心动的风景便驻足整日，顺着晚风漫无目的漂泊，落日余晖，你跳我跳。随心度日，随性而行。"
+    },
+    XMLR:{
+        name:"冒险小队大队长",
+        img:"maoxianxiaoduidaduizhang.png",
+        desc:"临行敲定全套稳妥攻略，精打细算规划开销路线，独自启程却不排斥萍水相逢。遇上三观契合的路人可结伴同行一日，遇上异色更是直接收服。余下时光回归独行，是能统筹旅途、灵活相处的领队型旅人。"
+    },
+    XMLW:{
+        name:"雪糕鉴赏官",
+        img:"xuegaojianshangguan.png",
+        desc:"你想堆个雪人吗？你想吃口雪糕吗？完整规划整趟旅途框架，日常开销精打细算，偶遇投缘的同行游客便相约逛市集、尝在地美食。主线行程恪守原定计划，只在闲暇时分结伴，在烟火里邂逅短暂温暖。"
+    },
+    XMYR:{
+        name:"无畏天马",
+        img:"wuweitianma.png",
+        desc:"提前备好文博场馆游览方案，理性规划参观动线，孤身奔赴人文古迹。在展馆与旧址邂逅同好便结伴研学，游览结束各自奔赴前路，潇洒自在，如风里驰骋的天马。"
+    },
+    XMYW:{
+        name:"高雅人士",
+        img:"gaoyarenshi.png",
+        desc:"高雅人士鉴赏中。行程有序从容，偏爱古城文脉风光，遇见志趣相投的旅人便并肩漫步老街。因风景与故事产生共鸣而结伴半日，尽兴之后回归独处，在热闹与孤独之间寻得恰好的平衡。"
+    },
+    XSLR:{
+        name:"诗仙",
+        img:"shixian.png",
+        desc:"今朝有酒今朝醉，无攻略无束缚，随性启程漫游，凭借理智躲开宰客陷阱。沿路随缘结识同行伙伴，投缘便结伴逛吃，三观不合便挥手别离，来去洒脱，携一身风月自在漫游人间。"
+    },
+    XSLW:{
+        name:"街溜子（bushi）",
+        img:"jieliuzi.png",
+        desc:"出行全无既定方案，随性搭讪路上有缘旅人，撞见美味好物临时组队打卡玩乐。兴致消散便分头奔赴各自旅途，主打一场场不期而遇、来去自由的偶遇式独旅。"
+    },
+    XSYR:{
+        name:"心地善良的阿飘",
+        img:"xindishanliangdeapiao.png",
+        desc:"随心穿梭山野小镇，沉迷自然风光与无边遐想，理智斟酌住宿与出行安全。偶遇灵魂同频的旅人便结伴探秘小众秘境，温柔闲散，恍若游荡在人间的温柔游魂。"
+    },
+    XSYW:{
+        name:"暖暖小甜饼",
+        img:"nuannuanxiaotianbing.png",
+        desc:"彻底放下行程枷锁，被沿途风土人情打动便临时改道。一路边走边结交新朋友，结伴沉浸在地烟火日常，在独行的旅程里捡拾源源不断的温暖与欢喜。"
+    }
+};
 
-        // 4. 关闭图鉴弹窗
-        closeBtn.addEventListener('click', () => {
-            albumModal.style.display = 'none';
-            // 恢复页面滚动
-            document.body.style.overflow = 'auto';
-        });
 
-        // 点击遮罩层关闭弹窗
-        albumModal.addEventListener('click', (e) => {
-            if (e.target === albumModal) {
-                albumModal.style.display = 'none';
-                document.body.style.overflow = 'auto';
-            }
-        });
-    </script>
+//分数容器、答题记录（新增答案存储，返回自动回填选项）
+let score={G:0,X:0,M:0,S:0,L:0,Y:0,R:0,W:0}
+let now=0;
+let answerRecord = {}; //记录每一题选择下标
+
+//页面切换
+function hideAll(){
+    document.getElementById("page-home").classList.add("hide")
+    document.getElementById("page-question").classList.add("hide")
+    document.getElementById("page-res").classList.add("hide")
+}
+function startTest(){
+    hideAll()
+    document.getElementById("page-question").classList.remove("hide")
+    renderQ()
+}
+//渲染题目（已选答案自动标蓝选中）
+function renderQ(){
+    const item=questionList[now]
+    document.getElementById("cur").innerText=now+1
+    document.getElementById("qtext").innerText=item.q
+    let html=""
+    item.opt.forEach((o,i)=>{
+        let selectClass = "";
+        if(answerRecord[now] === i) selectClass = "selected";
+        html+=`<div class="opt ${selectClass}" onclick="selectOpt(${i})">${o}</div>`
+    })
+    document.getElementById("opts-box").innerHTML=html
+    //首题隐藏上一题按钮
+    document.getElementById("prevBtn").style.display = now === 0 ? "none" : "block";
+}
+
+//选择选项保存答案
+function selectOpt(idx){
+    answerRecord[now] = idx;
+}
+
+//上一题按钮
+document.getElementById("prevBtn").onclick = function(){
+    if(now > 0){
+        now--;
+        renderQ();
+    }
+}
+//下一题按钮
+document.getElementById("nextBtn").onclick = function(){
+    //没选答案提示
+    if(answerRecord[now] == undefined){
+        alert("请先选择一个选项哦~");
+        return;
+    }
+    //最后一题直接算分出结果
+    if(now >= questionList.length - 1){
+        calcResult();
+        return;
+    }
+    now++;
+    renderQ();
+}
+
+//计算结果
+function calcResult(){
+    //重新统计总分
+    score={G:0,X:0,M:0,S:0,L:0,Y:0,R:0,W:0};
+    for(let index in answerRecord){
+        let optIdx = answerRecord[index];
+        let sStr=questionList[index].score[optIdx]
+        let [key,val]=sStr.split(":")
+        score[key]+=Number(val)
+    }
+    hideAll()
+    document.getElementById("page-res").classList.remove("hide")
+    //四维判定
+    let gx=score.G>score.X?"G":"X"
+    let ms=score.M>score.S?"M":"S"
+    let ly=score.L>score.Y?"L":"Y"
+    let rw=score.R>score.W?"R":"W"
+    let code=gx+ms+ly+rw
+    let info=personInfo[code]
+    //填充页面数据
+    document.getElementById("res-code").innerText=code
+    document.getElementById("res-name").innerText=info.name
+    document.getElementById("res-desc").innerText=info.desc
+    document.getElementById("person-img").src=info.img
+}
+
+//重置测试
+function restart(){
+    hideAll()
+    document.getElementById("page-home").classList.remove("hide")
+    score={G:0,X:0,M:0,S:0,L:0,Y:0,R:0,W:0}
+    now=0
+    answerRecord = {};
+}
+
+// ========== 新增：图鉴弹窗控制函数 ==========
+function openAlbum(){
+    document.getElementById("albumModal").style.display = "block";
+    document.body.style.overflow = "hidden";
+}
+function closeAlbum(){
+    document.getElementById("albumModal").style.display = "none";
+    document.body.style.overflow = "";
+}
+//点击遮罩关闭弹窗
+document.getElementById("albumModal").addEventListener("click",function(e){
+    if(e.target === this) closeAlbum();
+})
+</script>
 </body>
 </html>
